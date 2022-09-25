@@ -10,7 +10,7 @@ export const Title = styled.Text`
     color: #000;
     font-size: 30px;
     font-weight: bold;
-    margin-top: 75px;
+    margin-top: 50px;
 `;
 
 export const SubTitle = styled.Text`
@@ -38,7 +38,7 @@ export const Input = styled.TextInput`
 export const ButtonLogin = styled.TouchableOpacity`
     width: 90%;
     height: 50px;
-    background-color: #2e54d4;
+    background-color: ${props => props.bg};
     border-radius: 5px;
     margin-top: 8px;
     justify-content: center;
