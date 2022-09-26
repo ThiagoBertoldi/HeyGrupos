@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { Alert, ActivityIndicator, StatusBar } from 'react-native';
 import { Container, HeaderRoom, HeaderRoomLeft, ButtonHeaderLeft, TextHeaderLeft, ButtonHeaderRigth, Modal, List } from './styles';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
-
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import { ActivityIndicator, StatusBar } from 'react-native';
 
 import FabButton from '../../components/FabButton';
 import ModalNewRoom from '../../components/ModalNewRoom';
@@ -24,8 +23,7 @@ export default function ChatRoom() {
 
   useEffect( () => {
     const hasUser = auth().currentUser ? auth().currentUser.toJSON() : null;
-    console.log(hasUser);
-
+    
     setUser(hasUser);
 
   }, [isFocused]);
@@ -57,28 +55,51 @@ export default function ChatRoom() {
 
     return () => isActive = false;
 
-  }, [isFocused, updateScreen])
+  }, [isFocused, updateScreen]);
  
-    function handleSignOut(){
-      auth().signOut()
-      .then(() => {
-        setUser(null);
-        navigation.navigate('Login')
-      })
-      .catch((error) => {
-        alert('Não tem usuário: ' + error);
-      })
-    }
+  function handleSignOut(){
+    auth().signOut()
+    .then(() => {
+      setUser(null);
+      navigation.navigate('Login')
+    })
+    .catch((error) => {
+      alert('Não tem usuário: ' + error);
+    })
+  }
 
-    function deleteRoom(){
-      alert('OK');
-    }
+  function deleteRoom(owner, idRoom){
+    if(owner !== user?.uid) return;
 
-    if(loading){
-      return(
-        <ActivityIndicator color='#000' size='large' />
-      )
-    }
+    Alert.alert(
+      "Atenção!",
+      "Você tem certeza que deseja deletar essa sala?",
+      [
+        {
+          text: 'Cancel',
+          onPress: () => {},
+          style: 'cancel'
+        },
+        {
+          text: 'Ok',
+          onPress: () => handleDeleteRoom(idRoom),
+        }
+      ]
+    )
+
+  }    
+
+  async function handleDeleteRoom(idRoom){
+    await firestore().collection('MESSAGE_THREADS').doc(idRoom).delete();
+
+    setUpdateScreen(!updateScreen);
+  }
+
+  if(loading){
+    return(
+      <ActivityIndicator color='#000' size='large' />
+    )
+  }
 
   return (
    <Container>
@@ -101,16 +122,26 @@ export default function ChatRoom() {
         showVerticalScrollIndicator={ false }
         data={threads}
         key={ item => item._id }
-        renderItem={ ({ item }) => ( <ChatList data={item} /> ) }
+        renderItem={ ({ item }) => ( 
+          <ChatList 
+            data={item} 
+            deleteRoom={ () => deleteRoom( item.owner, item._id ) } 
+            userStatus={ user } 
+          /> ) }
       />
      
-      <FabButton setVisibleModal={ () => setModal(true) } userStatus={ user }  deleteRoom={ () => deleteRoom() } />
+      <FabButton 
+        setVisibleModal={ () => setModal(true) } 
+        userStatus={ user } 
+      />
       
       <Modal
         visible={ modal }
         transparent={ true }
       >
-        <ModalNewRoom setVisibleModal={ () => setModal(false) } setUpdateScreen={ () => setUpdateScreen(!updateScreen) } />
+        <ModalNewRoom 
+          setVisibleModal={ () => setModal(false) } 
+          setUpdateScreen={ () => setUpdateScreen(!updateScreen) } />
       </Modal>
    </Container>
   );
