@@ -14,7 +14,7 @@ export default function AppRoutes() {
             <Stack.Screen name="Login" component={ Login } options={{ title: 'Faça login' }} />
             <Stack.Screen name="ChatRoom" component={ ChatRoom } options={{ headerShown: false }} />
             <Stack.Screen name="Messages" component={ Messages } options={({ route }) => ({ title: route.params?.thread.name })} />
-            <Stack.Screen name="Search" component={ Search } options={{ title: '' }} />
+            <Stack.Screen name="Search" component={ Search } options={{ title: 'Procurando algum grupo?' }} />
         </Stack.Navigator>
   )
 }
